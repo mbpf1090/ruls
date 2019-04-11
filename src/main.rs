@@ -1,6 +1,9 @@
+extern crate colored;
+
 use std::env;
 use std::path;
 use std::fs::{DirEntry, ReadDir};
+use colored::*;
 
 fn main() {
     let mut args = env::args();
@@ -18,9 +21,9 @@ fn main() {
         let item = item.unwrap();
         
         if item.metadata().unwrap().is_dir() {
-            println!("{}", item.file_name().into_string().unwrap());
+            println!("{}", item.file_name().into_string().unwrap().green());
         } else {
-            println!("{:?}", item.file_type());
+            println!("{}", item.file_name().into_string().unwrap().yellow());
         }
     }
 }
