@@ -11,7 +11,7 @@ fn main() {
 
     let path_str: String = match args.next() {
         Some(path) => path,
-        None => String::from("Error")
+        None => String::from(".")
     };
     
     let path: &path::Path = path::Path::new(&path_str);
