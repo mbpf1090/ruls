@@ -34,23 +34,21 @@ fn mode_to_perm_str(entry: &DirEntry) -> String {
     let mut mode = entry.metadata().unwrap().permissions().mode();
     mode = mode & 0b0000000_111_111_111;
     for i in 0..3 {
-        if i == 0 {
-            mode = mode >> 0;
-        } else {
-            mode = mode >> 3;
+        if i > 0 {
+            mode = mode << 3;
         }
-        let foo = mode & 0b111;
-        if foo & 0b100 == 0 {
+        let mode_masked = mode & 0b111000000;
+        if mode_masked & 0b100000000 == 0 {
             s.push('-')
         } else {
             s.push('r')
         }
-        if foo & 0b010 == 0 {
+        if mode_masked & 0b010000000 == 0 {
             s.push('-')
         } else {
             s.push('w')
         }
-        if foo & 0b001 == 0 {
+        if mode_masked & 0b001000000 == 0 {
             s.push('-')
         } else {
             s.push('x')
