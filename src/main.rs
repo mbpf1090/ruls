@@ -31,7 +31,6 @@ fn main() {
 
 fn mode_to_perm_str(entry: &u32) -> String {
     let mut s = String::new();
-    //let mut mode = entry.metadata().unwrap().permissions().mode();
     let mut mode = *entry;
     mode = mode & 0b0000000_111_111_111;
     for i in 0..3 {
