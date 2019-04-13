@@ -25,8 +25,11 @@ fn main() {
     });
 
     for item in paths {
-        let item = item.unwrap();
-
+        let item = item;
+        let item = match item {
+            Ok(dir) => dir,
+            Err(_) => {continue},
+        };
         
         if item.metadata().unwrap().is_dir() {
             println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").green());
