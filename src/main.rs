@@ -22,16 +22,17 @@ fn main() {
         let item = item.unwrap();
         
         if item.metadata().unwrap().is_dir() {
-            println!("{} -> {}",mode_to_perm_str(&item), item.file_name().into_string().unwrap().green());
+            println!("{} -> {}",mode_to_perm_str(&item.metadata().unwrap().permissions().mode()), item.file_name().into_string().unwrap().green());
         } else {
-            println!("{} -> {}",mode_to_perm_str(&item), item.file_name().into_string().unwrap().yellow());
+            println!("{} -> {}",mode_to_perm_str(&item.metadata().unwrap().permissions().mode()), item.file_name().into_string().unwrap().yellow());
         }
     }
 }
 
-fn mode_to_perm_str(entry: &DirEntry) -> String {
+fn mode_to_perm_str(entry: &u32) -> String {
     let mut s = String::new();
-    let mut mode = entry.metadata().unwrap().permissions().mode();
+    //let mut mode = entry.metadata().unwrap().permissions().mode();
+    let mut mode = *entry;
     mode = mode & 0b0000000_111_111_111;
     for i in 0..3 {
         if i > 0 {
@@ -56,4 +57,15 @@ fn mode_to_perm_str(entry: &DirEntry) -> String {
         s.push(' ');
     }
     s
+}
+
+#[cfg(test)]
+mod test {
+    use super::mode_to_perm_str;
+    #[test]
+
+    fn parse_permission() {
+        let mode: u32 = 33188;
+        assert_eq!(mode_to_perm_str(&mode), "rw- r-- r-- ");
+    }
 }
