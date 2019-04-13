@@ -2,6 +2,7 @@ extern crate colored;
 
 use std::env;
 use std::path;
+use std::process;
 use std::fs::{DirEntry, ReadDir};
 use colored::*;
 use std::os::unix::fs::PermissionsExt;
@@ -17,14 +18,20 @@ fn main() {
     
     let path: &path::Path = path::Path::new(&path_str);
     println!("{}", path.display());
-    let paths = path.read_dir().expect("No such directory");
+    //let paths = path.read_dir().expect("No such directory");
+    let paths = path.read_dir().unwrap_or_else( |err| {
+        println!("No such directory: {}", err);
+        process::exit(1);
+    });
+
     for item in paths {
         let item = item.unwrap();
+
         
         if item.metadata().unwrap().is_dir() {
-            println!("{} -> {}",mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").green());
+            println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").green());
         } else {
-            println!("{} -> {}",mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").yellow());
+            println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").yellow());
         }
     }
 }
