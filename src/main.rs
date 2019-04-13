@@ -17,14 +17,14 @@ fn main() {
     
     let path: &path::Path = path::Path::new(&path_str);
     println!("{}", path.display());
-    let paths = path.read_dir().expect("Error getting directory");
+    let paths = path.read_dir().expect("No such directory");
     for item in paths {
         let item = item.unwrap();
         
         if item.metadata().unwrap().is_dir() {
-            println!("{} -> {}",mode_to_perm_str(&item.metadata().unwrap().permissions().mode()), item.file_name().into_string().unwrap().green());
+            println!("{} -> {}",mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").green());
         } else {
-            println!("{} -> {}",mode_to_perm_str(&item.metadata().unwrap().permissions().mode()), item.file_name().into_string().unwrap().yellow());
+            println!("{} -> {}",mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").yellow());
         }
     }
 }
