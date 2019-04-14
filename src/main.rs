@@ -25,13 +25,13 @@ fn main() {
     });
 
     for item in paths {
-        let item = item;
+
         let item = match item {
             Ok(dir) => dir,
             Err(_) => {continue},
         };
         
-        if item.metadata().unwrap().is_dir() {
+        if item.metadata().expect("Error getting metadata").is_dir() {
             println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").green());
         } else {
             println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").yellow());
@@ -47,18 +47,18 @@ fn mode_to_perm_str(entry: &u32) -> String {
         if i > 0 {
             mode = mode << 3;
         }
-        let mode_masked = mode & 0b111000000;
-        if mode_masked & 0b100000000 == 0 {
+        let mode_masked = mode & (0b111 << 6);
+        if mode_masked & (1 << 8) == 0 {
             s.push('-')
         } else {
             s.push('r')
         }
-        if mode_masked & 0b010000000 == 0 {
+        if mode_masked & (1 << 7) == 0 {
             s.push('-')
         } else {
             s.push('w')
         }
-        if mode_masked & 0b001000000 == 0 {
+        if mode_masked & (1 << 6) == 0 {
             s.push('-')
         } else {
             s.push('x')
