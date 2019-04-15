@@ -1,14 +1,20 @@
 extern crate colored;
+extern crate atty;
 
 use std::env;
 use std::path;
 use std::process;
 use std::fs::{DirEntry, ReadDir};
 use colored::*;
+use atty::Stream;
 use std::os::unix::fs::PermissionsExt;
 
 fn main() {
     let mut args = env::args();
+    let mut is_tty = true;
+    if !atty::is(Stream::Stdout) {
+        is_tty = false;
+    }
     args.next();
 
     let path_str: String = match args.next() {
@@ -30,11 +36,18 @@ fn main() {
             Ok(dir) => dir,
             Err(_) => {continue},
         };
-        
-        if item.metadata().expect("Error getting metadata").is_dir() {
-            println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").green());
+        if is_tty {
+            if item.metadata().expect("Error getting metadata").is_dir() {
+                println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").green());
+            } else {
+                println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").yellow());
+            }
         } else {
-            println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").yellow());
+            if item.metadata().expect("Error getting metadata").is_dir() {
+                println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename"));
+            } else {
+                println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename"));
+            }
         }
     }
 }
