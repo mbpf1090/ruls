@@ -1,13 +1,13 @@
-extern crate colored;
 extern crate atty;
+extern crate colored;
 
+use atty::Stream;
+use colored::*;
 use std::env;
+use std::fs::{DirEntry, ReadDir};
+use std::os::unix::fs::PermissionsExt;
 use std::path;
 use std::process;
-use std::fs::{DirEntry, ReadDir};
-use colored::*;
-use atty::Stream;
-use std::os::unix::fs::PermissionsExt;
 
 fn main() {
     let mut args = env::args();
@@ -19,34 +19,83 @@ fn main() {
 
     let path_str: String = match args.next() {
         Some(path) => path,
-        None => String::from(".")
+        None => String::from("."),
     };
-    
+
     let path: &path::Path = path::Path::new(&path_str);
     println!("{}", path.display());
     //let paths = path.read_dir().expect("No such directory");
-    let paths = path.read_dir().unwrap_or_else( |err| {
+    let paths = path.read_dir().unwrap_or_else(|err| {
         println!("No such directory: {}", err);
         process::exit(1);
     });
 
     for item in paths {
-
         let item = match item {
             Ok(dir) => dir,
-            Err(_) => {continue},
+            Err(_) => continue,
         };
         if is_tty {
             if item.metadata().expect("Error getting metadata").is_dir() {
-                println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").green());
+                println!(
+                    "{} -> {}",
+                    mode_to_perm_str(
+                        &item
+                            .metadata()
+                            .expect("Error getting permissions")
+                            .permissions()
+                            .mode()
+                    ),
+                    item.file_name()
+                        .into_string()
+                        .expect("Error getting filename")
+                        .green()
+                );
             } else {
-                println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename").yellow());
+                println!(
+                    "{} -> {}",
+                    mode_to_perm_str(
+                        &item
+                            .metadata()
+                            .expect("Error getting permissions")
+                            .permissions()
+                            .mode()
+                    ),
+                    item.file_name()
+                        .into_string()
+                        .expect("Error getting filename")
+                        .yellow()
+                );
             }
         } else {
             if item.metadata().expect("Error getting metadata").is_dir() {
-                println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename"));
+                println!(
+                    "{} -> {}",
+                    mode_to_perm_str(
+                        &item
+                            .metadata()
+                            .expect("Error getting permissions")
+                            .permissions()
+                            .mode()
+                    ),
+                    item.file_name()
+                        .into_string()
+                        .expect("Error getting filename")
+                );
             } else {
-                println!("{} -> {}", mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()), item.file_name().into_string().expect("Error getting filename"));
+                println!(
+                    "{} -> {}",
+                    mode_to_perm_str(
+                        &item
+                            .metadata()
+                            .expect("Error getting permissions")
+                            .permissions()
+                            .mode()
+                    ),
+                    item.file_name()
+                        .into_string()
+                        .expect("Error getting filename")
+                );
             }
         }
     }
