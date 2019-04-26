@@ -4,10 +4,39 @@ extern crate colored;
 use atty::Stream;
 use colored::*;
 use std::env;
-//use std::fs::{DirEntry, ReadDir};
 use std::os::unix::fs::PermissionsExt;
 use std::path;
 use std::process;
+use std::fmt;
+
+#[derive(Debug)]
+struct Dir {
+    name: String,
+    permissions: String,
+    size: String,
+    is_dir: bool,
+}
+
+impl Dir {
+    fn new(entry: std::fs::DirEntry) -> Dir {
+        Dir {
+            name: entry.file_name().into_string().expect("Eror getting file name"),
+            permissions: mode_to_perm_str(&entry.metadata().expect("Error getting permissions").permissions().mode()),
+            size: entry.metadata().expect("Error getting size").len().to_string(),
+            is_dir: entry.metadata().expect("Error getting metadata").is_dir()
+        }
+    }
+}
+
+impl fmt::Display for Dir {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.is_dir {
+        write!(f, "{:<15} | {:<10}", self.permissions, self.name)
+        } else {
+        write!(f, "{: <15} | {: <30} | {: <5} bytes", self.permissions, self.name, self.size)
+        }
+    }
+}
 
 fn main() {
     let mut args = env::args();
@@ -28,41 +57,21 @@ fn main() {
         println!("No such directory: {}", err);
         process::exit(1);
     });
+
     // Header
     println!("{:<15} | {:<30} | {:<5}", "Permissions", "Name", "Size");
+    
     // Table
     for item in paths {
         let item = match item {
-            Ok(dir) => dir,
+            Ok(dir) => Dir::new(dir),
             Err(_) => continue,
         };
         if is_tty {
-            if item.metadata().expect("Error getting metadata").is_dir() {
-                println!(
-                    "{:<15} | {:<10}",
-                    mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()),
-                    item.file_name().into_string().expect("Error getting filename").green(),
-                );
-            } else {
-                println!(
-                    "{: <15} | {: <30} | {: <5} bytes",
-                    mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()),
-                    item.file_name().into_string().expect("Error getting filename").yellow(),
-                    item.metadata().expect("Error getting size").len().to_string().red());
-            }
+            // Todo: Add colors
+            println!("{}", item);
         } else {
-            if item.metadata().expect("Error getting metadata").is_dir() {
-                println!(
-                    "{} -> {}",
-                    mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()),
-                    item.file_name().into_string().expect("Error getting filename"));
-            } else {
-                println!(
-                    "{} -> {} {}bytes",
-                    mode_to_perm_str(&item.metadata().expect("Error getting permissions").permissions().mode()),
-                    item.file_name().into_string().expect("Error getting filename"),
-                    item.metadata().expect("Error getting size").len().to_string());
-            }
+            println!("{}", item);
         }
     }
 }
