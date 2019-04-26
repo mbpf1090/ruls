@@ -15,23 +15,25 @@ struct Dir {
     permissions: String,
     size: String,
     is_dir: bool,
+    colored: bool,
 }
 
 impl Dir {
-    fn new(entry: std::fs::DirEntry) -> Dir {
+    fn new(entry: std::fs::DirEntry, colored: bool) -> Dir {
         Dir {
             name: entry.file_name().into_string().expect("Eror getting file name"),
             permissions: mode_to_perm_str(&entry.metadata().expect("Error getting permissions").permissions().mode()),
             size: entry.metadata().expect("Error getting size").len().to_string(),
-            is_dir: entry.metadata().expect("Error getting metadata").is_dir()
+            is_dir: entry.metadata().expect("Error getting metadata").is_dir(),
+            colored: colored,
         }
     }
 }
 
 impl fmt::Display for Dir {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.is_dir {
-        write!(f, "{:<15} | {:<10}", self.permissions, self.name)
+        if self.is_dir && self.colored {
+        write!(f, "{:<15} | {:<10}", self.permissions, self.name.green())
         } else {
         write!(f, "{: <15} | {: <30} | {: <5} bytes", self.permissions, self.name, self.size)
         }
@@ -60,19 +62,14 @@ fn main() {
 
     // Header
     println!("{:<15} | {:<30} | {:<5}", "Permissions", "Name", "Size");
-    
+
     // Table
     for item in paths {
         let item = match item {
-            Ok(dir) => Dir::new(dir),
+            Ok(dir) => Dir::new(dir, is_tty),
             Err(_) => continue,
         };
-        if is_tty {
-            // Todo: Add colors
             println!("{}", item);
-        } else {
-            println!("{}", item);
-        }
     }
 }
 
